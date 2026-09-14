@@ -1,0 +1,91 @@
+\section{\bench{}}
+\label{sec:benchmark}
+
+\bench{} separates mechanism validation from photorealistic evaluation.
+This design prevents perception errors from obscuring whether prefix-aware planning is correct, while retaining the complexity required to test a deployable embodied stack.
+
+\subsection{Mini-\taskname{}: Exact Mechanism Tests}
+
+Mini-\taskname{} comprises partially observed room graphs and small grid worlds with deterministic or stochastic sensors.
+Tasks, arrival times, action prefixes, and evidence certificates can be enumerated exactly.
+Each instance is constructed from one of four mechanism families:
+(i) matched terminal evidence with different acquisition times;
+(ii) long actions with high terminal gain versus short actions with early gain;
+(iii) task-prior shifts that reverse the preferred evidence; and
+(iv) macro-actions with controlled duration variance.
+Dynamic programming provides an exact arrival-aware oracle.
+The layer measures policy regret, evidence-time likelihood, and the approximation error induced by time binning or limited \jet{} rank.
+It is not used to claim visual realism.
+
+\subsection{HM3D + Habitat: Photorealistic Evaluation}
+
+The primary layer uses unseen HM3D scenes in Habitat
+\citep{savva2019habitat,ramakrishnan2021hm3d}.
+The agent receives RGB-D observations and noisy egomotion.
+It does not receive GPS/Compass, global ground-truth pose, a semantic map, navigation mesh access, shortest-path distance, or unobserved object annotations.
+Open-vocabulary perception, local control, the \rfm{} capacity, validators, candidate generation, and frozen post-arrival executors are identical across methods.
+Training may use simulator cloning for counterfactual supervision; evaluation may not.
+
+The benchmark fixes scene splits before hyperparameter selection.
+Training and validation scenes support model fitting and evidence-threshold calibration.
+The test split contains at least 30 unseen scenes, with a target of 50--60 subject to compute.
+Every comparison is paired by scene, start pose, service catalog, task seed, arrival seed, and sensor-noise seed.
+A visual-realism stress test may use Habitat-GS or recorded scans, but remains separate from the primary table.
+
+\begin{figure*}[t]
+  \centering
+  \placeholderfigure{4.8cm}{Benchmark overview: Mini-\taskname{} mechanism layer; HM3D/Habitat photorealistic layer; four task families; five arrival processes; atomic interruption protocol.}
+  \caption{\textbf{\bench{} design.}
+  The controlled layer supplies exact oracles and diagnostic counterexamples.
+  The photorealistic layer evaluates the same interruption semantics with noisy embodied perception and navigation.}
+  \label{fig:benchmark}
+\end{figure*}
+
+\subsection{Task Families and Compositional Splits}
+
+All natural-language requests compile to typed requirement programs.
+The benchmark contains four families:
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=3pt]
+  \item \textbf{Category/instance navigation:} reach and confirm a named object, requiring a grounded location and reachability evidence.
+  \item \textbf{Attribute QA:} answer a visible property such as color, material, state, or coarse shape from an identity-qualified, sufficiently resolved view.
+  \item \textbf{Spatial QA:} answer a relation such as inside, on, near, or left-of from compatible entity bindings and geometrically consistent evidence.
+  \item \textbf{Presence/absence verification:} output \textsc{Present}, \textsc{Absent}, or \textsc{Insufficient}. Absence requires a coverage certificate and a calibrated category detector; unsupported guessing is penalized.
+\end{enumerate}
+
+Splits are defined over requirement structure, not only language paraphrases.
+Training includes single primitives and a subset of binary combinations.
+The compositional test split holds out attribute--category, room--relation, and conjunction patterns while retaining the constituent primitives.
+A separate parser track maps natural language to programs; the primary algorithmic comparison uses gold template programs so that parser errors do not confound exploration.
+
+\subsection{Arrival Processes and Atomic Evaluation}
+
+The benchmark defines five arrival regimes over the same real-time horizon:
+\textbf{early-heavy}, with high initial hazard;
+\textbf{memoryless}, with constant hazard;
+\textbf{late-heavy}, with increasing hazard;
+\textbf{burst/windowed}, with service peaks; and
+\textbf{misspecified}, where the evaluation hazard differs from training.
+Multiple arrival times can be resampled along a stored trajectory to reduce evaluation variance only when the policy itself was conditioned on the corresponding declared hazard.
+A fixed policy cannot be retrospectively reweighted and presented as adaptation.
+
+At each low-level step the evaluator applies the order
+observation $\rightarrow$ memory commit $\rightarrow$ arrival check.
+If interrupted, the action does not complete and future observations are inaccessible.
+The evaluator snapshots the memory hash, pose belief, action prefix, task identifier, and downstream executor seed to make leakage audits possible.
+
+\subsection{Utility and Metrics}
+
+For each task family, raw post-arrival performance is mapped to $[0,1]$ using a predeclared normalization.
+Navigation utility combines success within budget and normalized service cost; QA uses correctness with an abstention-aware score; absence verification uses selective risk; and recall-only utility measures performance with $B=0$.
+The three primary metrics are:
+\begin{align}
+\mathrm{Recall}\text{-}\awu &=
+\mathbb{E}_{z,\tau}[U_z(M_\tau,x_\tau;0)],\\
+\mathrm{Service}\text{-}\awu &=
+\mathbb{E}_{z,\tau}[U_z(M_\tau,x_\tau;B)],\\
+\mathrm{WorstFamilyService}\text{-}\awu &=
+\min_{g\in\mathcal{G}}\mathbb{E}[U_z\mid z\in g].
+\end{align}
+Here AWU denotes arrival-weighted utility.
+Secondary metrics include the readiness curve and its area, task-family raw metrics, post-arrival success/cost/SPL, evidence grounding precision, absence risk--coverage, ECE/Brier score, blockage rate, memory size, latency, evidence-time C-index, and hitting-time calibration.
+Coverage is reported only as a diagnostic, never as success.

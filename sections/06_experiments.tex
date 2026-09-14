@@ -1,0 +1,41 @@
+\section{Experiments}
+\label{sec:experiments}
+
+We test four hypotheses:
+\textbf{H1} endpoint proxies can rank actions differently from AWU;
+\textbf{H2} evidence timing improves decisions under interruption;
+\textbf{H3} evidence-program factorization improves held-out composition generalization; and
+\textbf{H4} endpoint planning degrades as macro-action duration variance grows.
+
+\paragraph{Baselines.}
+Task-hidden baselines include Random, Nearest Frontier, Coverage, information gain, Semantic Novelty, Explore-then-Act/ECC
+\citep{ye2026look}, belief uncertainty
+\citep{zhang2026theory}, semantic-affordance priority
+\citep{chen2026abot}, and latent-fact coverage
+\citep{cai2026autocontext}.
+Task-distribution-aware baselines are Expected Requirement Deficit, Successor Features/GPI
+\citep{barreto2017successor}, myopic endpoint utility, and model-based reward-free exploration
+\citep{sekar2020plan2explore,zhang2021rewardfree}.
+Ablations replace \method{} with a Direct Utility Critic, endpoint-only \jet{}, uniform prefix weighting, independent evidence times, or uncertified detections.
+Task-Known/ActiveVOO-style
+\citep{liu2025activevoo}, Arrival-Known, Oracle Memory, and Hindsight Candidate are reported separately as upper bounds.
+Complete adaptations appear in \cref{app:baselines}.
+
+\paragraph{Primary metrics.}
+Recall-AWU evaluates $B=0$; Service-AWU permits a short post-arrival budget; Worst-Family Service-AWU is the minimum macro-average across the four task families.
+Secondary metrics include readiness area, post-arrival success/cost/SPL, QA accuracy, evidence grounding precision, absence risk--coverage, ECE/Brier, hitting-time calibration, C-index, blockage, latency, and memory.
+Coverage is diagnostic only.
+
+\paragraph{Protocol and statistics.}
+All methods share candidates, sensors, perception, memory, local control, and downstream executors.
+We use at least five training seeds and paired episodes with identical scene, start, task, arrival, and noise seeds.
+A hierarchical bootstrap resamples scene, episode, then task/arrival draw.
+We report means, 95\% confidence intervals, and paired effects.
+Validation scenes select thresholds, robust radius, and early stopping; the test split is run once.
+The pre-registered primary comparison is \method{} against the strongest validation-selected task-hidden baseline.
+
+\paragraph{Stress tests.}
+We vary arrival family and misspecification, task-prior shift, perception and odometry noise, action-duration variance, joint rank, prefix-bin width, and counterfactual data volume.
+A logged single-action variant measures dependence on simulator cloning.
+Compute reporting includes branch generation, training, inference latency, and peak memory.
+

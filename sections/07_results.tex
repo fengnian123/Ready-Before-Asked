@@ -1,0 +1,49 @@
+\section{Results and Analysis}
+\label{sec:results}
+
+No synthetic scores are inserted in this draft.
+The placeholders below are connected to the frozen protocol and will be replaced only by evaluator-generated artifacts.
+
+\begin{table*}[t]
+  \centering
+  \placeholdertable{1.8cm}{Methods $\times$ Recall-AWU, Service-AWU, Worst-Family Service-AWU, post-arrival cost, and inference cost.}
+  \caption{\textbf{Primary unseen-scene results.}
+  Task-hidden methods share the embodied stack; task-known and oracle variants are separated.
+  Report mean and 95\% hierarchical-bootstrap confidence intervals over at least five seeds.}
+  \label{tab:main}
+\end{table*}
+
+\paragraph{Anytime readiness.}
+The primary criterion is whether \method{} improves both Recall-AWU and Service-AWU over the strongest task-hidden baseline without harming the worst family.
+The final text will report paired effects, per-family raw metrics, and distance to the upper bounds, separating benefits from pre-arrival evidence and interrupted pose.
+
+\begin{figure*}[t]
+  \centering
+  \placeholderfigure{2.8cm}{Left: rank correlation of coverage, information gain, semantic novelty, and endpoint utility with AWU. Right: matched-endpoint action-ranking reversals under arrival and prior shifts.}
+  \caption{\textbf{Proxy alignment and action-ranking reversals.}
+  Correlations are aggregated by scene; paired counterexamples isolate evidence timing.}
+  \label{fig:proxy}
+\end{figure*}
+
+\paragraph{Proxy mismatch and timing.}
+We test H1 instead of assuming it.
+If endpoint proxies remain strongly aligned across arrivals and priors, the motivation must be weakened.
+Endpoint-only, prefix-uniform, \method{}, and Arrival-Known then isolate timing:
+early-heavy hazards should favor early certified evidence, whereas late-heavy hazards may justify larger terminal gains.
+Mini-\taskname{} reports exact regret.
+
+\begin{table}[t]
+  \centering
+  \placeholdertable{1.8cm}{Direct critic, Successor Features, independent \jet{}, joint \jet{}, and oracle on seen and held-out compositions; endpoint, prefix-uniform, \method{}, and Arrival-Known across hazards.}
+  \caption{\textbf{Composition and arrival ablations.}
+  Report downstream AWU together with evidence-time calibration.}
+  \label{tab:ablations}
+\end{table}
+
+\paragraph{Composition, robustness, and failures.}
+Held-out conjunctions test whether \cref{eq:factorization} outperforms direct utility interpolation and linear successor features.
+The independent-to-joint gap measures evidence correlation.
+Stress tests attribute degradation to duration, sensor noise, hazard mismatch, or limited data.
+Failures are assigned to candidate omission, navigation, certification, hitting-time calibration, program parsing, or prior specification.
+Full per-family results, robustness curves, efficiency, and qualitative cases appear in \cref{app:results}.
+

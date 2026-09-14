@@ -1,0 +1,213 @@
+\section{Endpoint Insufficiency}
+\label{app:proof}
+
+Let $\mathcal{R}_a(s)$ denote expected downstream readiness after prefix $s$ of action $a$.
+Conditioned on a request arriving before the action ends, its interruption value is
+\begin{equation}
+I_f(a)=\int_0^{L_a} f(s)\mathcal{R}_a(s)\,ds.
+\end{equation}
+
+\paragraph{Proposition 1 (formal statement).}
+For any two actions $a,b$ of equal duration $L$ such that
+$\mathcal{R}_a(L)=\mathcal{R}_b(L)$ but
+$\mathcal{R}_a(s)\neq\mathcal{R}_b(s)$ on a set of nonzero measure,
+there exists a valid arrival density $f$ for which $I_f(a)\neq I_f(b)$.
+If the sign of $\mathcal{R}_a(s)-\mathcal{R}_b(s)$ takes both positive and negative values on sets of nonzero measure, then there exist densities $f_1,f_2$ that induce opposite action rankings.
+
+\paragraph{Proof.}
+Let $D_+=\{s:\mathcal{R}_a(s)>\mathcal{R}_b(s)\}$.
+If $D_+$ has nonzero measure, choose a nonnegative density whose support is contained in $D_+$.
+Then the integral of the readiness difference is positive and $I_f(a)>I_f(b)$.
+The symmetric construction on
+$D_-=\{s:\mathcal{R}_a(s)<\mathcal{R}_b(s)\}$
+gives the opposite ranking whenever $D_-$ has nonzero measure.
+If only one of the sets has nonzero measure, an unequal ranking still follows.
+The shared terminal value is irrelevant because a point has zero measure for a continuous arrival density; the discrete-time result follows by placing probability mass on a differing prefix.
+\hfill$\square$
+
+This proposition does not state that coverage is always a poor heuristic.
+It states that no score depending only on terminal memory can preserve all interruption-time preferences when prefix readiness differs.
+
+\section{Expanded Related Work}
+\label{app:related}
+
+\paragraph{Fixed-budget exploration.}
+Classical frontier exploration, Active Neural SLAM, intrinsic-motivation methods, and recent foundation-model explorers optimize geometric coverage, learned novelty, spatial-belief quality, or endpoint checkpoint coverage
+\citep{yamauchi1997frontier,chaplot2020ans,sekar2020plan2explore,ye2026look,zhang2026theory}.
+AutoContext, ABot-Explorer, LMEE, and RoboEXP make pre-task experience reusable through structured context or memory
+\citep{cai2026autocontext,chen2026abot,wang2026lmee,jiang2024roboexp}.
+\taskname{} does not claim reusable memory as novel; it asks which evidence should be acquired first when the endpoint is not guaranteed to be reached.
+
+\paragraph{Known-task active perception.}
+Embodied QA, ActiveVOO, and ObsGraph acquire observations that support a given question or plan
+\citep{das2018eqa,liu2025activevoo,lee2026obsgraph}.
+They motivate evidence-sensitive action choice but can condition it on the realized request.
+In \taskname{}, only a service catalog distribution is visible before interruption, so known-task systems are diagnostic upper bounds.
+
+\paragraph{Unknown future reward.}
+Reward-free RL, world-model exploration, and successor features seek knowledge reusable under later rewards
+\citep{jin2020rewardfree,zhang2021rewardfree,sekar2020plan2explore,barreto2017successor}.
+Typically exploration or representation learning ends before the downstream reward is given.
+\taskname{} instead requires immediate execution from a frozen mid-action state, and its AND/OR/absence programs make utility nonlinear in primitive evidence.
+
+\section{Baseline Adaptations}
+\label{app:baselines}
+
+Every baseline selects from exactly the same macro-actions.
+Nearest Frontier uses path length to the closest reachable frontier.
+Coverage and Information Gain score expected newly observed free space or entropy reduction.
+Semantic Novelty counts new grounded categories under the shared detector.
+ECC-style scoring estimates newly reached environment checkpoints; belief uncertainty prioritizes regions with uncertain spatial state; semantic-affordance priority ranks transit anchors; and latent-fact coverage counts newly supportable context facts.
+Expected Requirement Deficit weighs missing primitives by the declared task prior.
+Successor Features predicts discounted primitive occupancies and applies GPI for catalog weights.
+Myopic Endpoint Utility uses the frozen executor to supervise terminal gain.
+The reward-free model baseline plans for latent model disagreement.
+
+Structural ablations retain training data and capacity whenever possible.
+Endpoint-\jet{} removes all prefix labels; Prefix-Uniform retains prefixes but replaces $f_t$ with a uniform distribution; Independent-\jet{} uses a product of marginal hitting-time models; No-Certification admits raw detections; and Direct Utility predicts catalog-averaged utility without the evidence interface.
+Task-Known receives $z$, Arrival-Known receives $\tau$, Oracle Memory receives true evidence state, Hindsight Candidate selects the best candidate after rollout, and Online Branch Planner may query simulator futures.
+Only the first group constitutes fair task-hidden comparisons.
+
+\section{Censored Evidence-Time Likelihood}
+\label{app:likelihood}
+
+For primitive $k$, let $s_k$ be its first certified prefix and $\delta_k=1$ if a hit occurs before $L_a$.
+The right-censored negative log-likelihood is
+\begin{equation}
+\mathcal{L}_{\mathrm{hit}}=
+-\sum_k\left[
+\delta_k\log p_\theta(T_k^a=s_k)
++(1-\delta_k)\log p_\theta(T_k^a>L_a)
+\right].
+\end{equation}
+For discrete hazards,
+$p_\theta(T_k^a>L_a)=\prod_{r=1}^{L_a}(1-\alpha_{kr})$,
+with mixture likelihood marginalized before taking the logarithm.
+Calibration is evaluated by prefix horizon and primitive type; C-index measures hitting-time ordering under censoring.
+
+\section{Atomic Interruption Protocol}
+\label{app:atomic}
+
+For every low-level step, the evaluator performs the following operations in order:
+\begin{enumerate}[leftmargin=*]
+  \item apply one control and advance the simulator;
+  \item render the permitted agent observations;
+  \item update pose belief and run the frozen perception stack;
+  \item atomically commit newly validated records to \rfm{};
+  \item draw or reveal the pre-sampled arrival event for the completed step;
+  \item if the event occurs, cancel all remaining low-level controls and freeze memory, pose belief, and compute state.
+\end{enumerate}
+The post-arrival executor receives no observation generated after the freeze.
+Arrival seeds are sampled independently of method behavior after conditioning on the specified hazard.
+When a policy changes wall-clock inference time enough to matter, the benchmark offers both environment-step and wall-clock arrival tracks.
+
+\section{Planning Algorithm}
+\label{app:algorithm}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{\arabic*.}]
+  \item Given memory $M_t$, pose belief $x_t$, task prior $p$, and arrival model
+  $(f_t,S_t)$, construct
+  $\mathcal{A}_t\gets\textsc{GenerateCandidates}(M_t,x_t)$.
+  \item For every $a\in\mathcal{A}_t$, sample
+  $\{\mathbf{T}^{a,(m)},\hat x^{a,(m)}_{1:L_a}\}_{m=1}^{P}
+  \sim\jet_\theta(M_t,x_t,a)$.
+  \item For each prefix $s$, compute
+  \[
+  \bar R(a,s)\gets \sum_z p(z)\frac{1}{P}\sum_m
+  g_z(M_t\oplus\{k:T_k^{a,(m)}\le s\},\hat x_s^{a,(m)};B).
+  \]
+  \item Score each action by
+  \[
+  \hat Q(a)\gets
+  \sum_s f_t(s)\bar R(a,s)+S_t(L_a)\hat V(M_{t+L_a},\hat x_{t+L_a})
+  -\lambda C(a).
+  \]
+  \item Return $\arg\max_{a\in\mathcal{A}_t}\hat Q(a)$.
+\end{enumerate}
+
+\section{Evidence Schema and Requirement Programs}
+\label{app:programs}
+
+Each primitive has a type signature, a validator, a confidence calibration set, and a provenance requirement.
+Grounded location requires a persistent entity identifier and 3D support.
+An attribute view requires minimum projected size, visibility, and a calibrated attribute score.
+A relation view requires compatible timestamps or geometrically registered observations.
+Coverage certificates store observed free-space or surface support within a declared scope.
+Absence combines coverage with category-specific detector recall; the system abstains when either component falls below threshold.
+Reachability evidence records local-planner feasibility from the interrupted pose belief.
+
+\begin{table*}[h]
+  \centering
+  \placeholdertable{3.2cm}{Full task-template inventory and program definitions: argument types, primitive requirements, utility, abstention rule, and composition split.}
+  \caption{\textbf{Task program specification.}
+  This table will be populated from the benchmark manifest so that the paper and released evaluator use identical definitions.}
+  \label{tab:programs}
+\end{table*}
+
+\section{Implementation Details}
+\label{app:implementation}
+
+The final implementation report will include:
+model width, depth, attention heads, latent mixture rank, maximum memory records, candidate count, prefix-bin width, particles per action, planning depth, leaf-value architecture, optimizer, learning-rate schedule, batch size, training updates, validator thresholds, all loss weights, hardware, simulator throughput, and wall-clock cost.
+Hyperparameters are selected on validation scenes only.
+The default configuration is frozen before any final test run.
+All baselines use the same perception checkpoints and local controller.
+
+\begin{table*}[h]
+  \centering
+  \placeholdertable{3.0cm}{Architecture, optimization, planning, memory, perception, navigation, hardware, and compute hyperparameters.}
+  \caption{\textbf{Implementation configuration.}
+  Every value is to be read from the released experiment configuration rather than transcribed manually.}
+  \label{tab:hyperparameters}
+\end{table*}
+
+\section{Statistical Analysis}
+\label{app:statistics}
+
+The primary comparison is \method{} against the strongest validation-selected task-hidden baseline.
+Training uses at least five independent seeds.
+Confidence intervals use a hierarchical bootstrap that resamples scenes, episodes within scenes, and task/arrival draws within episodes.
+Pairwise differences reuse identical scene, start, task, arrival, and noise seeds.
+We report means, 95\% confidence intervals, and paired standardized effect sizes.
+The test split is run once after thresholds, the robust radius, and early stopping are fixed.
+Family utilities are normalized with validation-set constants and macro-averaged.
+Per-family raw metrics remain visible to prevent a favorable aggregate from hiding a failed task family.
+
+\section{Additional Result Placeholders}
+\label{app:results}
+
+\begin{table*}[h]
+  \centering
+  \placeholdertable{3.1cm}{Per-family navigation, attribute QA, spatial QA, and presence/absence results with success, SPL/cost, accuracy, grounding precision, risk--coverage, ECE, and Brier score.}
+  \caption{\textbf{Per-task-family results.}}
+  \label{tab:family}
+\end{table*}
+
+\begin{table*}[h]
+  \centering
+  \placeholdertable{3.1cm}{Ablations for endpoint prediction, prefix weighting, joint evidence, certification, utility consistency, ranking loss, and robust planning.}
+  \caption{\textbf{Component ablations.}}
+  \label{tab:component-ablations}
+\end{table*}
+
+\begin{figure*}[h]
+  \centering
+  \placeholderfigure{4.5cm}{Qualitative trajectories and readiness curves: successful early evidence, endpoint trap, false certificate, candidate omission, and recovery after blockage.}
+  \caption{\textbf{Qualitative cases and failure taxonomy.}}
+  \label{fig:qualitative}
+\end{figure*}
+
+\section{Reporting Checklist}
+\label{app:checklist}
+
+Before submission, the release and manuscript should verify:
+\begin{itemize}[leftmargin=*]
+  \item no realized task, target category, arrival sample, future frame, navmesh, or shortest-path distance leaks into pre-task action selection;
+  \item interrupted actions do not execute to completion and the same atomic ordering is used by every method;
+  \item all result placeholders are replaced by evaluator-generated artifacts and no draft values remain;
+  \item all citations and venue metadata are manually verified;
+  \item scene, task-composition, and arrival seeds are published with licenses;
+  \item counterfactual branch count, simulator hours, training compute, inference latency, and peak memory are reported;
+  \item confidence intervals reflect scene-level variation and all primary comparisons are paired;
+  \item claims remain restricted to static environments and declared task families.
+\end{itemize}

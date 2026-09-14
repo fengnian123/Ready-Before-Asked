@@ -1,0 +1,22 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Exploration and reusable memory.}
+Frontier and learned explorers optimize coverage or intrinsic rewards
+\citep{yamauchi1997frontier,chaplot2020ans,sekar2020plan2explore}.
+Recent agents construct spatial beliefs, semantic memories, or reusable instance context before downstream tasks
+\citep{cai2026autocontext,ye2026look,zhang2026theory,chen2026abot,wang2026lmee,jiang2024roboexp}.
+These methods motivate pre-task exploration, but usually score a fixed endpoint.
+\taskname{} instead evaluates the task utility supported by every potentially interrupted action prefix.
+
+\paragraph{Task-conditioned perception and task transfer.}
+Embodied QA and active observation acquire evidence for a known question or plan
+\citep{das2018eqa,liu2025activevoo,lee2026obsgraph}; they form task-known comparators because \taskname{} hides the realized request.
+Reward-free RL and successor features prepare for later rewards
+\citep{jin2020rewardfree,zhang2021rewardfree,barreto2017successor}, but do not require immediate service from a frozen mid-action state.
+Options model temporally extended actions
+\citep{sutton1999options}, and anytime algorithms value intermediate outputs
+\citep{zilberstein1996anytime}.
+Our contribution combines these constraints with grounded evidence: correlated first-hitting times are composed through nonlinear task requirements and valued under random within-action interruption.
+A detailed neighbor-by-neighbor comparison appears in \cref{app:related}.
+

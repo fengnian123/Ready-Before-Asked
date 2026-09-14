@@ -1,0 +1,71 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Consider a household robot waiting for its next request.
+Before a user asks for anything, it may inspect rooms, verify object locations, or acquire views that reveal attributes and spatial relations.
+The identity of the future request is not known: it may ask the robot to navigate to a mug, report the color of a chair, determine whether a medication box is inside a cabinet, or verify that no extinguisher is present in a region.
+Nor is the waiting period fixed.
+A request can arrive after ten seconds or several minutes and can interrupt the robot halfway through a long traversal.
+The robot must then serve the request using exactly the pose and evidence committed at that moment.
+
+This regime is poorly captured by the dominant \emph{explore-then-act} abstraction.
+Task-agnostic exploration typically optimizes geometric coverage, map completeness, information gain, or a checkpoint score after a fixed budget
+\citep{yamauchi1997frontier,chaplot2020ans,ye2026look,zhang2026theory}.
+Pre-task context and long-term memory methods make the acquired state reusable
+\citep{cai2026autocontext,wang2026lmee,jiang2024roboexp,chen2026abot},
+but they likewise evaluate a completed exploration phase or the quality of its terminal memory.
+Task-conditioned active perception instead values information through a known goal
+\citep{liu2025activevoo,lee2026obsgraph}.
+Neither view answers the decision faced while the task is still hidden and the exploration action may be interrupted.
+
+The missing variable is \emph{when evidence becomes usable}.
+Suppose two actions expose the same facts after 100 low-level steps.
+The first action reveals a frequently requested object after 20 steps and then continues to a distant region; the second reveals nothing until its final panoramic scan.
+They are equivalent to any endpoint-only objective.
+They are not equivalent if most requests arrive before step 50.
+Macro-actions such as \emph{go to the kitchen and scan the counters} are not atomic, so endpoint scoring can systematically prefer actions with high terminal value but poor early prefixes.
+
+We formalize this problem as \textbf{interruptible pre-task exploration} (\taskname).
+Before exploration, the agent knows a distribution over a catalog of possible tasks and an arrival hazard, but not the realized task or arrival time.
+At every completed low-level step, its sensor observation is atomically committed to memory and an arrival event is checked.
+If a request arrives, exploration halts immediately.
+Performance is the true downstream utility of the frozen memory and pose, optionally after a small post-arrival service budget.
+This formulation evaluates \emph{anytime readiness} rather than terminal exploration quality.
+
+We propose \method{}---the \textbf{C}ounterfactual \textbf{A}nytime \textbf{R}eadiness \textbf{A}gent.
+Its central component is a \textbf{joint evidence--time model} (\jet{}).
+For each candidate macro-action, \jet{} predicts a joint distribution over the first prefix at which reusable evidence primitives become reliable.
+The primitives are stored in a reliability-first memory (\rfm{}) with provenance, view quality, timestamps, and calibrated confidence.
+A task template is compiled into a requirement program over these primitives.
+Executing each program on joint evidence-time samples produces a task readiness curve without conditioning exploration on the eventual task.
+An arrival-aware semi-Markov planner integrates these curves against the request hazard and trades interruption utility against action cost and future value.
+Counterfactual simulator branches provide supervision at real action prefixes, including right-censored actions that never acquire a particular primitive.
+
+\begin{figure}[t]
+  \centering
+  \placeholderfigure{4.2cm}{Introduction overview: fixed-budget exploration versus \taskname{}; a request interrupts a macro-action; \method{} prioritizes evidence that becomes useful early.}
+  \caption{\textbf{Ready before asked.}
+  Conventional exploration scores the endpoint of a fixed budget.
+  \taskname{} evaluates the downstream service supported at a random interruption time.
+  \method{} predicts evidence acquisition times and selects actions that maximize arrival-weighted readiness.}
+  \label{fig:overview}
+\end{figure}
+
+We instantiate the setting in \bench{}.
+A controlled Mini-\taskname{} layer exactly enumerates tasks, arrivals, prefixes, and optimal policies, isolating the mechanism from perception.
+A photorealistic layer uses HM3D in Habitat
+\citep{savva2019habitat,ramakrishnan2021hm3d}
+with RGB-D, noisy odometry, and frozen perception, navigation, memory capacity, and downstream executors shared by all methods.
+Four task families---category/instance navigation, attribute QA, spatial QA, and presence/absence verification---share an explicit evidence vocabulary and include held-out compositions.
+The evaluation spans early-heavy, memoryless, late-heavy, burst, and misspecified arrival processes.
+
+Our contributions are threefold:
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=3pt]
+  \item \textbf{Problem and protocol.}
+  We introduce \taskname{}, in which a hidden task can arrive inside a macro-action, and measure the downstream utility supported by the exact interrupted prefix.
+  \item \textbf{Method.}
+  We introduce \method{}, which learns joint first-hitting times of reliable evidence from counterfactual action prefixes, composes them with task requirement programs, and plans with an arrival-aware semi-Markov objective.
+  \item \textbf{Benchmark and diagnosis.}
+  We define \bench{} across controlled and photorealistic environments to test endpoint-proxy mismatch, timing sensitivity, compositional generalization, and robustness to arrival and task-prior shift.
+\end{enumerate}
+

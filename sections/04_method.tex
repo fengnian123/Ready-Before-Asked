@@ -1,0 +1,97 @@
+\section{Counterfactual Anytime Readiness Agent}
+\label{sec:method}
+
+\method{} factors action scoring through task-reusable evidence:
+\begin{equation}
+\label{eq:factorization}
+\text{prefix}\rightarrow\text{evidence time}
+\rightarrow\text{requirement satisfaction}\rightarrow\text{utility}.
+\end{equation}
+This makes timing explicit and supports new combinations of familiar evidence primitives.
+
+\begin{figure*}[t]
+  \centering
+  \placeholderfigure{4.0cm}{Reliability-first memory and candidates; joint evidence--time prediction; task requirement programs; arrival-aware semi-Markov planning; counterfactual prefix supervision.}
+  \caption{\textbf{\method{} overview.}
+  \jet{} predicts when reliable evidence first appears within each candidate action.
+  Programs compose joint samples into readiness curves, which the planner integrates against the request hazard.}
+  \label{fig:method}
+\end{figure*}
+
+\subsection{Reliability-First Memory}
+
+The memory \rfm{} stores records
+$e_i=(k_i,\gamma_i,t_i,x_i,q_i,\mathcal{P}_i)$:
+an evidence primitive, grounded bindings, time, pose belief, calibrated quality, and provenance such as frames, masks, and depth support.
+Primitives cover grounded location, attribute and relation views, region coverage, calibrated absence, and reachability.
+A primitive-specific validator must certify a record before it can satisfy a task; raw detections and language-model hypotheses do not count.
+All methods share the same memory capacity, validators, frozen perception and controller, and candidate macro-actions.
+
+\subsection{Joint Evidence--Time Model}
+
+For action $a$ with duration $L_a$, let
+\begin{equation}
+T_k^a=\inf\{s\in\{1,\ldots,L_a\}:k\text{ is certified in }M_{t+s}\},
+\end{equation}
+with $T_k^a=\infty$ when the action never certifies primitive $k$.
+A single view can jointly establish identity, attribute, and relation evidence, so independent marginals misrepresent conjunctions.
+\jet{} encodes \rfm{}, the candidate path, pose belief, and action type with a lightweight Transformer and couples discrete-time primitive hazards through a low-rank mixture:
+\begin{align}
+p_\theta(\mathbf{T}^{a}\mid M_t,x_t,a)
+&=\sum_{c=1}^{C}w_c\prod_{k=1}^{K}p_\theta(T_k^a\mid c,M_t,x_t,a),\\
+p_\theta(T_k^a=s\mid c,\cdot)
+&=\alpha_{kcs}\prod_{r<s}(1-\alpha_{kcr}).
+\end{align}
+Residual mass represents $\infty$.
+The model also predicts prefix pose/reachability summaries and blockage.
+Joint particles sampled from this distribution preserve same-view correlations.
+
+\subsection{Requirement Programs}
+
+Each service template compiles once into a typed program $g_z$.
+For example,
+\begin{align}
+g_{\mathrm{nav}(o)}&=\textsc{Location}(o)\wedge\textsc{Reachable}(o),\\
+g_{\mathrm{attr}(o,r)}&=\textsc{Identity}(o)\wedge\textsc{AttributeView}(o,r).
+\end{align}
+Programs for relations and absence additionally require compatible entity observations or calibrated region coverage.
+For joint sample $\mathbf{T}^a$ and prefix $s$,
+\begin{equation}
+\label{eq:task-readiness}
+R_z(M_t,a,s)=\mathbb{E}_{\mathbf{T}^a}
+\left[g_z\!\left(M_t\oplus\{k:T_k^a\le s\},\hat x_s^a;B\right)\right].
+\end{equation}
+The policy never receives realized task $z$; it uses
+$\bar R(M_t,a,s)=\mathbb{E}_{z\sim p(z)}R_z(M_t,a,s)$.
+Sample-wise execution avoids an independence product and lets held-out compositions reuse learned primitive dynamics.
+
+\subsection{Arrival-Aware Planning}
+
+With arrival density $f_t$, survival $S_t$, and action cost $C(a)$,
+\begin{equation}
+\label{eq:q}
+Q(M_t,x_t,a)=\mathbb{E}\!\left[
+\int_0^{L_a} f_t(s)\bar R(M_t,a,s)\,ds+
+S_t(L_a)V(M_{t+L_a},x_{t+L_a})-\lambda C(a)\right].
+\end{equation}
+The first term values interruption; the second applies only when the action completes first.
+No extra constant discount is needed because real time is already represented.
+We approximate the integral with prefix bins and joint particles and perform shallow receding-horizon search.
+\method{}-Robust optionally takes a worst-case expectation over an $L_1$ ball around the nominal task prior; it is evaluated only as an extension.
+
+\subsection{Counterfactual Prefix Training}
+
+From a cloned training state, every candidate is executed and true low-level prefixes provide evidence hitting times, pose summaries, and frozen-executor utilities.
+Unobserved hits are right-censored.
+The loss combines censored evidence-time likelihood with reliability calibration, pose/service-distance prediction, utility consistency, and pairwise ranking for matched-endpoint actions:
+\begin{equation}
+\mathcal{L}=\mathcal{L}_{\mathrm{hit}}+
+\beta_{\mathrm{rel}}\mathcal{L}_{\mathrm{rel}}+
+\beta_{\mathrm{pose}}\mathcal{L}_{\mathrm{pose}}+
+\beta_{\mathrm{util}}\mathcal{L}_{\mathrm{util}}+
+\beta_{\mathrm{rank}}\mathcal{L}_{\mathrm{rank}}.
+\end{equation}
+Branching is a simulator-only training privilege.
+At test time the agent evaluates the shared candidates with one \jet{} forward pass and never queries unexecuted futures.
+Full likelihoods and pseudocode appear in \cref{app:likelihood,app:algorithm}.
+

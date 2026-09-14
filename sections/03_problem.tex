@@ -1,0 +1,80 @@
+\section{Interruptible Pre-Task Exploration}
+\label{sec:problem}
+
+\paragraph{Environment and memory.}
+An episode takes place in an unknown environment $\mathcal{E}$.
+At low-level time $t$, the agent has pose belief $x_t$, receives observation $o_t$, and maintains memory $M_t$.
+Before any request is revealed, it chooses a temporally extended macro-action $a_t \in \mathcal{A}(M_t,x_t)$ with random duration $L_a$.
+Examples include traversing to a frontier, approaching an uncertain object, scanning a surface, or validating a previously weak observation.
+A fixed controller executes each macro-action as low-level controls $(u_{t},\ldots,u_{t+L_a-1})$.
+The exploration policy never observes the realized future task.
+
+\paragraph{Hidden task and random arrival.}
+A downstream task $z\in\mathcal{Z}$ is drawn from a declared service distribution $p(z)$.
+Its arrival time $\tau$ follows a possibly nonstationary hazard $h_t(s)$, the conditional probability of arrival at offset $s$ given survival until $s$.
+We write $S_t(s)$ for the conditional survival function and $f_t(s)$ for the associated arrival density.
+If the task arrives after low-level step $s$ of $a_t$, execution is interrupted and the pair $(M_{t+s},x_{t+s})$ is frozen.
+The agent then serves $z$ with a post-arrival budget $B$.
+
+We consider two complementary protocols.
+In \textbf{recall-only}, $B=0$: the task must be answered or localized from committed evidence, isolating memory value.
+In \textbf{rapid-service}, $B>0$: the task executor may navigate or acquire a small number of additional observations, so the interruption pose and reachability information also matter.
+Let $U_z(M,x;B)\in[0,1]$ denote normalized downstream utility.
+The objective is
+\begin{equation}
+\label{eq:objective}
+J(\pi)=
+\mathbb{E}_{\substack{\mathcal{E},\,z\sim p,\,\tau\\\pi}}
+\left[
+U_z(M_\tau,x_\tau;B)
+-\lambda C_{0:\tau}
+\right],
+\end{equation}
+where $C_{0:\tau}$ is pre-arrival cost.
+Utility is normalized within each task family before a preregistered macro average; this prevents arbitrary scale differences between navigation and QA from determining the policy.
+
+\paragraph{Atomic interruption semantics.}
+The ordering within each low-level step is fixed:
+\begin{equation}
+\text{control} \rightarrow \text{observation}
+\rightarrow \text{atomic memory commit}
+\rightarrow \text{arrival check}.
+\end{equation}
+Thus the image captured on the arrival step is available, while future frames and the unexecuted suffix of a macro-action are not.
+This convention is shared by every method and recorded in episode logs.
+
+\paragraph{Information constraints.}
+Before $\tau$, an admissible policy may use $M_t$, $x_t$, the service catalog and $p(z)$, and the assumed arrival model.
+It may not use the sampled task, target category, arrival seed, ground-truth map, navigation mesh, shortest-path distance, or future observation.
+Task-known policies are reported only as upper comparators.
+All task-hidden methods share candidate actions, perception, memory capacity, low-level control, and downstream task executors.
+
+\subsection{Why Endpoint Objectives Are Insufficient}
+\label{sec:endpoint}
+
+Let $\bar R(M,a,s)=\mathbb{E}_{z\sim p}[U_z(M\oplus\Delta M^a_s,x^a_s;B)]$
+be expected service readiness after executing prefix $s$ of $a$.
+An endpoint scorer compares only $\bar R(M,a,L_a)$.
+
+\paragraph{Proposition 1 (hazard-dependent action reversal).}
+There exist actions $a$ and $b$ with equal duration and equal endpoint readiness for which
+(a) an endpoint-only scorer is indifferent, but
+(b) the optimal action under \cref{eq:objective} changes with the arrival distribution.
+
+\paragraph{Construction.}
+Let $L_a=L_b=L$ and both endpoints satisfy one unit-valued requirement.
+Action $a$ acquires the required evidence at $\epsilon<L/2$; action $b$ acquires it at $L-\epsilon$.
+Their endpoint readiness is one.
+For any arrival distribution concentrated on $(\epsilon,L-\epsilon)$, $a$ has strictly larger interruption utility.
+Swapping the two hitting times, or placing task mass on evidence uniquely revealed early by $b$, reverses the preference while preserving terminal scores.
+The appendix gives a general statement in terms of prefix-readiness integrals.
+This elementary reversal is the reason \taskname{} must model evidence timing rather than attach a random termination probability to an endpoint reward.
+
+\begin{figure}[t]
+  \centering
+  \placeholderfigure{3.4cm}{Controlled action-ranking reversal: two actions with matched endpoint evidence but different first-availability times under early-heavy and late-heavy hazards.}
+  \caption{\textbf{Endpoint equivalence does not imply anytime equivalence.}
+  The final evidence is matched, but arrival-weighted utility depends on the complete readiness curve.}
+  \label{fig:reversal}
+\end{figure}
+

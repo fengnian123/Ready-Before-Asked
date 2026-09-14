@@ -1,0 +1,9 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We introduced interruptible pre-task exploration, a setting in which an embodied agent knows the distribution of possible service requests but neither the realized task nor when it will arrive.
+Because a request can interrupt a macro-action, terminal coverage and endpoint information gain discard the timing that determines operational readiness.
+\method{} addresses this gap by predicting the joint first-hitting times of reliable, task-reusable evidence; composing those predictions through task requirement programs; and selecting actions with an arrival-aware semi-Markov objective.
+\bench{} pairs exact mechanism tests with photorealistic HM3D evaluation across navigation, question answering, and verification.
+The resulting perspective shifts pre-task exploration from maximizing what an agent eventually observes to maximizing what it can reliably do whenever it is asked.
+
