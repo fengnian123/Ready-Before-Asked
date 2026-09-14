@@ -9,6 +9,7 @@
 \usepackage{xcolor}
 \usepackage{multirow}
 \usepackage{makecell}
+\usepackage{float}
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{url}
@@ -57,7 +58,7 @@ The useful question is therefore not what the agent will know at the end of expl
 We formalize this setting as \emph{interruptible pre-task exploration} (\taskname), where a hidden task is drawn from a known service distribution and arrives according to a time-varying hazard.
 We introduce \method{}, a counterfactual anytime-readiness agent that learns a joint evidence--time model (\jet{}) from action-prefix branches.
 \jet{} predicts when task-reusable evidence becomes reliable within each macro-action; task requirement programs compose these predictions into readiness curves, and an arrival-aware semi-Markov planner selects actions by expected downstream utility at the interruption time.
-We further specify \bench{}, a two-level evaluation protocol spanning exact controlled environments and photorealistic HM3D scenes, with navigation, attribute and spatial question answering, and presence/absence verification.
+We further specify \bench{}, spanning exact controlled environments, photorealistic HM3D scenes, and physical deployment on three commercial robots in indoor and outdoor environments, with navigation, attribute and spatial question answering, and presence/absence verification.
 Unlike coverage or endpoint information gain, the proposed objective directly values the timing, reliability, and compositional sufficiency of evidence for downstream service.
 \end{abstract}
 
@@ -78,9 +79,9 @@ All AI-assisted text, equations, code, citations, and experimental artifacts are
 The authors take responsibility for the final content of the paper.
 
 \subsection*{Ethics statement}
-The proposed benchmark uses simulated or licensed indoor scans and does not require collecting personally identifying information.
-Embodied perception systems can nevertheless expose private attributes of physical spaces and can fail unevenly across environments, object categories, and visual conditions.
-Any real-world deployment should use data minimization, access controls, visible recording indicators, and calibrated abstention.
+The simulated benchmark uses licensed indoor scans, while the physical evaluation also records robot observations in real indoor and outdoor scenes.
+Such systems can capture people or private attributes of spaces and can fail unevenly across environments, object categories, and visual conditions.
+Physical trials should obtain site permission and use data minimization, access controls, visible recording indicators, and calibrated abstention.
 The presence/absence protocol explicitly includes an \textsc{Insufficient} response to discourage unsupported negative claims.
 We will document dataset licenses, perception biases, and failure cases with the released benchmark.
 

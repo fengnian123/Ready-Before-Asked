@@ -34,8 +34,13 @@ We report means, 95\% confidence intervals, and paired effects.
 Validation scenes select thresholds, robust radius, and early stopping; the test split is run once.
 The pre-registered primary comparison is \method{} against the strongest validation-selected task-hidden baseline.
 
+\paragraph{Real-world protocol.}
+Indoor/outdoor trials use the same hidden-task catalog and arrival processes.
+An arrival cancels the remaining macro-action after the current observation commit and passes the frozen memory and physical pose to the executor.
+Methods receive matched starts, draws, budgets, and platform interfaces; native safety control remains active.
+We report AWU, success, distance, time, interruption prefix, and intervention rate by environment and platform.
+
 \paragraph{Stress tests.}
 We vary arrival family and misspecification, task-prior shift, perception and odometry noise, action-duration variance, joint rank, prefix-bin width, and counterfactual data volume.
 A logged single-action variant measures dependence on simulator cloning.
 Compute reporting includes branch generation, training, inference latency, and peak memory.
-

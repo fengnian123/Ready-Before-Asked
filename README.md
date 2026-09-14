@@ -27,5 +27,4 @@ The output is main.pdf.
 - iclr2027_conference.sty and .bst: official ICLR 2027 format
 - TODO.md: items that must be resolved before submission
 
-All figures and result tables are deliberate placeholders. No synthetic results are included. Keep iclrfinalcopy commented for anonymous review and enable it only for the camera-ready version.
-
+All figures and result tables are deliberate placeholders. No synthetic results are included. The manuscript now documents physical deployment on DEEP Robotics LYNX M20, X30, and Lite3 platforms in indoor and outdoor environments; the platform configuration is fixed, while quantitative robot results and qualitative frames remain placeholders. Keep iclrfinalcopy commented for anonymous review and enable it only for the camera-ready version.

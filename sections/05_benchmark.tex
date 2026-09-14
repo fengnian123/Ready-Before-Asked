@@ -1,7 +1,7 @@
 \section{\bench{}}
 \label{sec:benchmark}
 
-\bench{} separates mechanism validation from photorealistic evaluation.
+\bench{} separates mechanism validation from photorealistic evaluation and physical deployment.
 This design prevents perception errors from obscuring whether prefix-aware planning is correct, while retaining the complexity required to test a deployable embodied stack.
 
 \subsection{Mini-\taskname{}: Exact Mechanism Tests}
@@ -32,12 +32,20 @@ The test split contains at least 30 unseen scenes, with a target of 50--60 subje
 Every comparison is paired by scene, start pose, service catalog, task seed, arrival seed, and sensor-noise seed.
 A visual-realism stress test may use Habitat-GS or recorded scans, but remains separate from the primary table.
 
+\subsection{Physical Robot Deployment}
+\label{sec:realworld-benchmark}
+
+We deploy the complete \method{} stack on three commercial DEEP Robotics platforms: the wheel-legged LYNX M20 and the quadrupedal X30 and Lite3.
+M20 is the primary quantitative platform; X30 and the LiDAR-equipped Lite3 evaluate cross-platform transfer across indoor and outdoor scenes.
+The memory, \jet{} predictor, programs, and planner remain shared; only perception and low-level navigation adapters differ.
+Hardware and physical interruption details appear in \cref{app:realworld}.
+
 \begin{figure*}[t]
   \centering
-  \placeholderfigure{4.8cm}{Benchmark overview: Mini-\taskname{} mechanism layer; HM3D/Habitat photorealistic layer; four task families; five arrival processes; atomic interruption protocol.}
+  \placeholderfigure{4.3cm}{Benchmark overview: Mini-\taskname{} mechanism layer; HM3D/Habitat photorealistic layer; indoor/outdoor physical deployment on M20, X30, and Lite3; four task families; five arrival processes; atomic interruption protocol.}
   \caption{\textbf{\bench{} design.}
   The controlled layer supplies exact oracles and diagnostic counterexamples.
-  The photorealistic layer evaluates the same interruption semantics with noisy embodied perception and navigation.}
+  Simulation and physical deployments evaluate the same interruption semantics with noisy embodied perception and navigation.}
   \label{fig:benchmark}
 \end{figure*}
 

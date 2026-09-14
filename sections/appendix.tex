@@ -161,6 +161,40 @@ All baselines use the same perception checkpoints and local controller.
   \label{tab:hyperparameters}
 \end{table*}
 
+\section{Real-World Deployment}
+\label{app:realworld}
+
+\paragraph{Robot platforms.}
+We deploy \method{} on the same physical configuration used by our companion robotic system: DEEP Robotics LYNX M20, X30, and Lite3.
+The wheel-legged M20 is the primary quantitative platform; its standing size is $820\times430\times570$\,mm, mass is approximately 35\,kg, and manufacturer-rated endurance/range is 3\,h/15\,km unloaded.
+It carries dual 96-line LiDARs and wide-angle cameras.
+The quadrupedal X30 measures $1000\times695\times470$\,mm, has a mass of 56\,kg and a manufacturer-rated endurance/range of 2.5--4\,h/$\geq10$\,km, and provides integrated perception and autonomous navigation.
+The LiDAR-equipped quadrupedal Lite3 measures $610\times370\times496$\,mm, has a mass of 13.5\,kg and a manufacturer-rated endurance/range of 1.5--2\,h/2.7\,km, and exposes obstacle avoidance and autonomous navigation through its platform interface.
+Rated endurance and range are configuration descriptors, not experimental outcomes; time and distance are compared only between methods run on the same platform.
+
+\paragraph{Deployment interface and scenes.}
+Trials take place in real indoor and outdoor environments.
+Platform-specific perception and low-level navigation are abstracted behind a common macro-action interface, while \rfm{}, \jet{}, task programs, and the high-level arrival-aware planner remain unchanged.
+M20 is used for the main matched comparison, while X30 and Lite3 test whether the high-level policy transfers across wheel-legged and quadrupedal embodiments.
+On every platform, an arrival event cancels the remaining macro-action controls after the current observation is committed; downstream execution starts from that physical pose and frozen memory.
+Native collision avoidance and emergency-stop facilities remain active throughout all trials.
+
+\begin{table*}[h]
+  \centering
+  \placeholdertable{3.0cm}{Real-world results: method $\times$ indoor/outdoor Recall-AWU, Service-AWU, task success, distance, time, interrupted-prefix distribution, intervention rate, and 95\% confidence intervals; cross-platform transfer on M20, X30, and Lite3.}
+  \caption{\textbf{Physical robot evaluation.}
+  Populate every cell from completed trials under the matched real-world protocol.}
+  \label{tab:realworld}
+\end{table*}
+
+\begin{figure*}[h]
+  \centering
+  \placeholderfigure{4.2cm}{Indoor and outdoor robot trajectories: pre-task exploration, task arrival inside a macro-action, committed evidence at interruption, and downstream task execution on M20, X30, and Lite3.}
+  \caption{\textbf{Real-world deployments.}
+  Qualitative frames will show the exact interruption prefix and evidence available when each request arrives.}
+  \label{fig:realworld}
+\end{figure*}
+
 \section{Statistical Analysis}
 \label{app:statistics}
 
@@ -190,12 +224,12 @@ Per-family raw metrics remain visible to prevent a favorable aggregate from hidi
   \label{tab:component-ablations}
 \end{table*}
 
-\begin{figure*}[h]
+\begin{figure}[H]
   \centering
   \placeholderfigure{4.5cm}{Qualitative trajectories and readiness curves: successful early evidence, endpoint trap, false certificate, candidate omission, and recovery after blockage.}
   \caption{\textbf{Qualitative cases and failure taxonomy.}}
   \label{fig:qualitative}
-\end{figure*}
+\end{figure}
 
 \section{Reporting Checklist}
 \label{app:checklist}
@@ -208,6 +242,7 @@ Before submission, the release and manuscript should verify:
   \item all citations and venue metadata are manually verified;
   \item scene, task-composition, and arrival seeds are published with licenses;
   \item counterfactual branch count, simulator hours, training compute, inference latency, and peak memory are reported;
+  \item physical logs record platform, environment, task and arrival seeds, interruption prefixes, interventions, and site/data permissions;
   \item confidence intervals reflect scene-level variation and all primary comparisons are paired;
   \item claims remain restricted to static environments and declared task families.
 \end{itemize}
