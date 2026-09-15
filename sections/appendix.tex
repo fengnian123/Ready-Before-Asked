@@ -161,6 +161,40 @@ All baselines use the same perception checkpoints and local controller.
   \label{tab:hyperparameters}
 \end{table*}
 
+\section{Cross-Environment Protocol Details}
+\label{app:cross-environment}
+
+\paragraph{ProcTHOR.}
+ProcTHOR supplies diverse interactive houses for counterfactual branch generation and held-out task compositions.
+Its structured object, receptacle, attribute, and room metadata supports all four task families, but only information recovered through permitted egocentric observations may enter \rfm{} or the downstream executor.
+
+\paragraph{HM3D and HM3D-OVON.}
+HM3D is the primary photorealistic mesh domain and supports the complete navigation, attribute-QA, spatial-QA, and presence/absence catalog.
+The cross-domain navigation slice uses the official HM3D-OVON unseen-scene split and open-vocabulary goal semantics.
+
+\paragraph{OpenEQA.}
+We use the active-exploration portion of OpenEQA and retain natural questions whose answers can be certified by the declared attribute, spatial-relation, or presence/absence evidence primitives.
+The realized question is hidden before arrival; after interruption, evaluation follows the benchmark answer protocol with an additional abstention-aware report for questions lacking sufficient committed evidence.
+
+\paragraph{HSSD ObjectNav.}
+HSSD supplies high-quality, authored synthetic homes and semantically annotated object instances.
+Its ObjectNav episodes test whether policies learned from larger procedural corpora transfer to more realistic scene composition while preserving the task-hidden arrival wrapper.
+
+\paragraph{Habitat-GS.}
+Habitat-GS PointNav tests whether prefix timing and planning remain effective when observations are rendered from 3D Gaussian splats.
+It is a renderer-and-control stress test rather than the primary semantic benchmark.
+
+\paragraph{Dynamic HSSD and P4D-Bench.}
+The evolving-scene track uses versioned HSSD histories and P4D-Bench task construction.
+Pre-task evidence is timestamped, the realized downstream query remains hidden until arrival, and the evaluator exposes no future scene version.
+This track jointly stresses interrupted acquisition and stale evidence; we therefore report results both over all episodes and stratified by whether the queried state changed since its last certified observation.
+
+\paragraph{Common controls.}
+For every domain, task and arrival seeds are sampled independently after conditioning on the declared catalog and hazard.
+Methods share the same scene version, start, observation stream, candidate generator, local controller, downstream executor, and service budget within a comparison.
+Native SR, SPL, and QA metrics are retained alongside Recall-AWU and Service-AWU.
+No aggregate score is computed across benchmark columns.
+
 \section{Real-World Deployment}
 \label{app:realworld}
 
@@ -173,11 +207,30 @@ The LiDAR-equipped quadrupedal Lite3 measures $610\times370\times496$\,mm, has a
 Rated endurance and range are configuration descriptors, not experimental outcomes; time and distance are compared only between methods run on the same platform.
 
 \paragraph{Deployment interface and scenes.}
-Trials take place in real indoor and outdoor environments.
+Trials take place in multiple real indoor and outdoor environments.
+Indoor trials include offices, corridors, meeting rooms, kitchens, and shared service areas with clutter, doors, furniture, objects, and people; outdoor trials include building approaches, paved walkways, courtyards, and open service routes with longer traversals and changing illumination.
+The task catalog spans object or person navigation, visible-attribute questions, spatial-relation questions, and presence/absence verification.
+Targets remain stationary within an individual post-arrival execution, while their placement and the surrounding context may differ across sessions.
 Platform-specific perception and low-level navigation are abstracted behind a common macro-action interface, while \rfm{}, \jet{}, task programs, and the high-level arrival-aware planner remain unchanged.
 M20 is used for the main matched comparison, while X30 and Lite3 test whether the high-level policy transfers across wheel-legged and quadrupedal embodiments.
 On every platform, an arrival event cancels the remaining macro-action controls after the current observation is committed; downstream execution starts from that physical pose and frozen memory.
 Native collision avoidance and emergency-stop facilities remain active throughout all trials.
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    \textbf{Platform} & \textbf{Morphology} & \textbf{Primary sensing} & \textbf{Evaluation role} \\
+    \midrule
+    LYNX M20 & Wheel-legged & Dual 96-line LiDAR + cameras & Main indoor/outdoor comparison \\
+    X30 & Quadruped & Integrated perception stack & Cross-platform transfer \\
+    Lite3 & Quadruped & LiDAR navigation stack & Lightweight transfer \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Physical platforms and roles.} Manufacturer specifications describe the tested configurations and are not treated as experimental outcomes.}
+  \label{tab:robot-platforms}
+\end{table}
 
 \begin{table*}[h]
   \centering
@@ -244,5 +297,5 @@ Before submission, the release and manuscript should verify:
   \item counterfactual branch count, simulator hours, training compute, inference latency, and peak memory are reported;
   \item physical logs record platform, environment, task and arrival seeds, interruption prefixes, interventions, and site/data permissions;
   \item confidence intervals reflect scene-level variation and all primary comparisons are paired;
-  \item claims remain restricted to static environments and declared task families.
+  \item claims distinguish static-world, evolving-scene, and physical evaluations and remain restricted to the declared task families and benchmark protocols.
 \end{itemize}
