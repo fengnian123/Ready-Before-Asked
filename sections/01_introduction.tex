@@ -53,9 +53,12 @@ Counterfactual simulator branches provide supervision at real action prefixes, i
 
 We instantiate the setting in \bench{}.
 A controlled Mini-\taskname{} layer exactly enumerates tasks, arrivals, prefixes, and optimal policies, isolating the mechanism from perception.
-A photorealistic layer uses HM3D in Habitat
-\citep{savva2019habitat,ramakrishnan2021hm3d}
-with RGB-D, noisy odometry, and frozen perception, navigation, memory capacity, and downstream executors shared by all methods.
+The embodied evaluation then spans procedurally generated ProcTHOR houses, scanned HM3D environments, high-quality HSSD interiors, Habitat-GS Gaussian-splatting scenes, and dynamic HSSD histories from P4D-Bench
+\citep{savva2019habitat,ramakrishnan2021hm3d,deitke2022procthor,khanna2024hssd,xia2026habitatgs}.
+HM3D-OVON provides open-vocabulary navigation, OpenEQA supplies natural attribute and spatial questions, HSSD ObjectNav tests synthetic-to-scanned transfer, Habitat-GS PointNav isolates renderer and control transfer, and P4D-Bench stresses evidence that becomes stale across sessions
+\citep{yokoyama2024hm3dovon,majumdar2024openeqa}.
+The native task definitions are retained where applicable, while the realized task is withheld until a sampled interruption time.
+All methods share RGB-D sensing, noisy odometry, frozen perception and navigation interfaces, memory capacity, and downstream executors within each domain.
 Four task families---category/instance navigation, attribute QA, spatial QA, and presence/absence verification---share an explicit evidence vocabulary and include held-out compositions.
 The evaluation spans five arrival processes and real indoor/outdoor deployment on DEEP Robotics LYNX M20, X30, and Lite3 robots with a shared high-level interface.
 
@@ -66,5 +69,5 @@ Our contributions are threefold:
   \item \textbf{Method.}
   We introduce \method{}, which learns joint first-hitting times of reliable evidence from counterfactual action prefixes, composes them with task requirement programs, and plans with an arrival-aware semi-Markov objective.
   \item \textbf{Benchmark and diagnosis.}
-  We define \bench{} across controlled and photorealistic environments and demonstrate physical deployment on three robots, testing endpoint-proxy mismatch, timing sensitivity, compositional generalization, and robustness to arrival and task-prior shift.
+  We define \bench{} across controlled, procedural, scanned, synthetic, Gaussian-splatting, dynamic, and real-world environments and demonstrate physical deployment on three robots, testing endpoint-proxy mismatch, timing sensitivity, cross-domain transfer, compositional generalization, and robustness to arrival and task-prior shift.
 \end{enumerate}
