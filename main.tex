@@ -58,7 +58,7 @@ The useful question is therefore not what the agent will know at the end of expl
 We formalize this setting as \emph{interruptible pre-task exploration} (\taskname), where a hidden task is drawn from a known service distribution and arrives according to a time-varying hazard.
 We introduce \method{}, a counterfactual anytime-readiness agent that learns a joint evidence--time model (\jet{}) from action-prefix branches.
 \jet{} predicts when task-reusable evidence becomes reliable within each macro-action; task requirement programs compose these predictions into readiness curves, and an arrival-aware semi-Markov planner selects actions by expected downstream utility at the interruption time.
-We further specify \bench{}, spanning exact controlled environments, photorealistic HM3D scenes, and physical deployment on three commercial robots in indoor and outdoor environments, with navigation, attribute and spatial question answering, and presence/absence verification.
+We further specify \bench{} across exact controlled worlds, large-scale ProcTHOR houses, scanned HM3D environments, high-quality HSSD interiors, photorealistic Habitat-GS scenes, dynamic HSSD histories through P4D-Bench, and indoor/outdoor deployment on three commercial robots. The suite connects HM3D-OVON, OpenEQA, ObjectNav, PointNav, and P4D-Bench to navigation, attribute and spatial question answering, and presence/absence verification under a common hidden-task interruption protocol.
 Unlike coverage or endpoint information gain, the proposed objective directly values the timing, reliability, and compositional sufficiency of evidence for downstream service.
 \end{abstract}
 
