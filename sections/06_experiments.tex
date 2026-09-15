@@ -34,11 +34,18 @@ We report means, 95\% confidence intervals, and paired effects.
 Validation scenes select thresholds, robust radius, and early stopping; the test split is run once.
 The pre-registered primary comparison is \method{} against the strongest validation-selected task-hidden baseline.
 
+\paragraph{Cross-environment protocol.}
+We evaluate the complete agent on ProcTHOR \taskname{} compositions, HM3D-OVON, the active-exploration subset of OpenEQA, HSSD ObjectNav, Habitat-GS PointNav, and P4D-Bench on dynamic HSSD (\cref{tab:evaluation-matrix}).
+Each benchmark keeps its official split, goal specification, action interface, and success rule, then adds the \taskname{} wrapper: the goal is hidden before arrival, the declared task prior is shared by all methods, and evaluation starts from the exact interrupted prefix.
+Because the tasks and renderers differ, metrics are reported per benchmark rather than averaged across columns.
+ProcTHOR supplies the full four-family composition analysis; the remaining domains test transfer across open-vocabulary navigation, natural embodied questions, object and point goals, high-fidelity rendering, and evolving-scene settings.
+
 \paragraph{Real-world protocol.}
 Indoor/outdoor trials use the same hidden-task catalog and arrival processes.
 An arrival cancels the remaining macro-action after the current observation commit and passes the frozen memory and physical pose to the executor.
 Methods receive matched starts, draws, budgets, and platform interfaces; native safety control remains active.
-We report AWU, success, distance, time, interruption prefix, and intervention rate by environment and platform.
+M20 is the primary quantitative platform; X30 and Lite3 evaluate transfer of the unchanged high-level policy across wheel-legged and quadrupedal embodiments.
+We report AWU, success, distance, time, interruption prefix, and intervention rate separately by indoor/outdoor environment and platform.
 
 \paragraph{Stress tests.}
 We vary arrival family and misspecification, task-prior shift, perception and odometry noise, action-duration variance, joint rank, prefix-bin width, and counterfactual data volume.
