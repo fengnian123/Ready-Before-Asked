@@ -17,20 +17,55 @@ Dynamic programming provides an exact arrival-aware oracle.
 The layer measures policy regret, evidence-time likelihood, and the approximation error induced by time binning or limited \jet{} rank.
 It is not used to claim visual realism.
 
-\subsection{HM3D + Habitat: Photorealistic Evaluation}
+\subsection{Cross-Environment Simulation Suite}
+\label{sec:cross-environment}
 
-The primary layer uses unseen HM3D scenes in Habitat
-\citep{savva2019habitat,ramakrishnan2021hm3d}.
-The agent receives RGB-D observations and noisy egomotion.
-It does not receive GPS/Compass, global ground-truth pose, a semantic map, navigation mesh access, shortest-path distance, or unobserved object annotations.
-Open-vocabulary perception, local control, the \rfm{} capacity, validators, candidate generation, and frozen post-arrival executors are identical across methods.
+The simulation suite deliberately varies scene source, rendering fidelity, semantic diversity, and downstream goal type.
+It includes large-scale procedural houses from ProcTHOR, scanned real-world interiors from HM3D, high-quality authored synthetic interiors from HSSD, high-fidelity Gaussian-splatting environments from Habitat-GS, and evolving HSSD histories from P4D-Bench
+\citep{savva2019habitat,ramakrishnan2021hm3d,deitke2022procthor,khanna2024hssd,xia2026habitatgs}.
+We use HM3D-OVON for open-vocabulary navigation, the active-exploration portion of OpenEQA for natural embodied questions, HSSD ObjectNav for object-search transfer, Habitat-GS PointNav for photorealistic renderer transfer, and P4D-Bench for temporally changing evidence
+\citep{yokoyama2024hm3dovon,majumdar2024openeqa}.
+ProcTHOR supports large-scale training and held-out compositions of the four \taskname{} task families.
+These tasks are not pooled into a single leaderboard score; each retains its native goal representation and success rule where applicable.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \resizebox{\linewidth}{!}{%
+  \begin{tabular}{@{}lllll@{}}
+    \toprule
+    \textbf{Evaluation layer} & \textbf{Scene source} & \textbf{Representation} & \textbf{Downstream protocol} & \textbf{Primary role} \\
+    \midrule
+    Exact mechanism & Mini-\taskname{} & Room graph / grid & Enumerated service tasks & Oracle regret and timing \\
+    Procedural simulation & ProcTHOR & Interactive houses & \taskname{} service catalog & Scale and composition \\
+    Scanned simulation & HM3D & Textured mesh & HM3D-OVON & Open-vocabulary navigation \\
+    Scanned / recorded & HM3D + real scans & RGB-D episodes & OpenEQA & Attribute and spatial QA \\
+    Authored simulation & HSSD & Semantic 3D scenes & ObjectNav & Object-search transfer \\
+    Photorealistic simulation & Habitat-GS & 3D Gaussian splats & PointNav & Renderer and control transfer \\
+    Evolving simulation & HSSD & Versioned dynamic scenes & P4D-Bench & Temporal and stale-evidence stress \\
+    Physical deployment & Indoor / outdoor & Three robot platforms & Four service families & Embodiment transfer \\
+    \bottomrule
+  \end{tabular}%
+  }
+  \caption{\textbf{Environment and benchmark coverage.}
+  Every simulated protocol is wrapped by the same task-hidden arrival and atomic-interruption semantics; comparisons are made within, not across, heterogeneous benchmarks.}
+  \label{tab:evaluation-matrix}
+\end{table*}
+
+In the \taskname{} wrapper, the benchmark-native goal is sampled from the declared service catalog but remains hidden during pre-task exploration.
+When it arrives, the current macro-action is interrupted and the native downstream executor starts from the committed memory and interrupted pose.
+OpenEQA questions are filtered to those answerable from embodied visual evidence and mapped to the typed attribute, spatial, and verification programs; questions that require undeclared external knowledge are excluded.
+For P4D-Bench, the task catalog is sampled from a versioned HSSD scene history so that evidence can also become stale between observation sessions; this is reported separately from the within-action interruption analysis.
+
+The agent receives only the observation and egomotion channels supported by the matched domain, standardized to RGB-D and a noisy pose belief where available.
+It does not receive privileged global pose, semantic maps, navigation meshes, shortest-path distances, future frames, or unobserved object annotations.
+Within each domain, open-vocabulary perception, local control, \rfm{} capacity, validators, candidate generation, arrival draws, and frozen post-arrival executors are identical across methods.
 Training may use simulator cloning for counterfactual supervision; evaluation may not.
 
-The benchmark fixes scene splits before hyperparameter selection.
-Training and validation scenes support model fitting and evidence-threshold calibration.
-The test split contains at least 30 unseen scenes, with a target of 50--60 subject to compute.
-Every comparison is paired by scene, start pose, service catalog, task seed, arrival seed, and sensor-noise seed.
-A visual-realism stress test may use Habitat-GS or recorded scans, but remains separate from the primary table.
+Scene splits are fixed before hyperparameter selection.
+Training and validation scenes support model fitting and evidence-threshold calibration, while all headline results use unseen scenes or the official unseen split of the corresponding benchmark.
+Every comparison is paired by domain, scene, start pose, service catalog, task seed, arrival seed, and sensor-noise seed.
 
 \subsection{Physical Robot Deployment}
 \label{sec:realworld-benchmark}
@@ -42,10 +77,10 @@ Hardware and physical interruption details appear in \cref{app:realworld}.
 
 \begin{figure*}[t]
   \centering
-  \placeholderfigure{4.3cm}{Benchmark overview: Mini-\taskname{} mechanism layer; HM3D/Habitat photorealistic layer; indoor/outdoor physical deployment on M20, X30, and Lite3; four task families; five arrival processes; atomic interruption protocol.}
+  \placeholderfigure{4.3cm}{Benchmark overview: Mini-\taskname{}; ProcTHOR houses; HM3D/HM3D-OVON and OpenEQA; HSSD ObjectNav; Habitat-GS PointNav; dynamic HSSD/P4D-Bench; indoor/outdoor deployment on M20, X30, and Lite3.}
   \caption{\textbf{\bench{} design.}
   The controlled layer supplies exact oracles and diagnostic counterexamples.
-  Simulation and physical deployments evaluate the same interruption semantics with noisy embodied perception and navigation.}
+  Procedural, scanned, authored-synthetic, Gaussian-splatting, evolving-scene, and physical deployments evaluate the same interruption semantics with noisy embodied perception and navigation.}
   \label{fig:benchmark}
 \end{figure*}
 
