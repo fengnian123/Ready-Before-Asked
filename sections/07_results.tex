@@ -36,6 +36,18 @@ Mini-\taskname{} reports exact regret.
 We run the full loop on M20 indoors and outdoors and transfer it to X30 and Lite3.
 Only completed trials populate \cref{app:realworld}; no companion-paper results are reused.
 
+\begin{table*}[t]
+  \centering
+  \placeholdertable{2.1cm}{Per-domain results for ProcTHOR task compositions, HM3D-OVON, OpenEQA active exploration, HSSD ObjectNav, Habitat-GS PointNav, and P4D-Bench/dynamic HSSD. Report each benchmark's native metric together with Recall-AWU and Service-AWU; do not average heterogeneous columns.}
+  \caption{\textbf{Cross-environment generalization.}
+  All methods use the same hidden-task interruption wrapper within a domain, while scene splits, goals, and success rules remain benchmark-native.}
+  \label{tab:cross-environment-results}
+\end{table*}
+
+\paragraph{Environment breadth.}
+The cross-environment study asks whether evidence-time planning survives changes among procedural, scanned, authored-synthetic, and Gaussian-splatting rendering; among open-vocabulary goals, natural questions, object goals, and point goals; and from static scenes to versioned HSSD histories.
+Final claims will be made vertically within each benchmark and only after the corresponding placeholder in \cref{tab:cross-environment-results} is populated by matched runs.
+
 \begin{table}[t]
   \centering
   \placeholdertable{1.6cm}{Direct critic, Successor Features, independent \jet{}, joint \jet{}, and oracle on seen and held-out compositions; endpoint, prefix-uniform, \method{}, and Arrival-Known across hazards.}
